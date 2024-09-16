@@ -74,4 +74,4 @@ This project is open source and available under the [MIT License](LICENSE).
 ## Acknowledgements
 
 - [Fal.ai](https://www.fal.ai) for providing the Flux image generation models and API.
-- All contributors who have helped to improve this project.
+- this is a fork of https://github.com/strykerx/falai-fluxui 
