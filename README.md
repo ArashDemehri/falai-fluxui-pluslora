@@ -9,7 +9,7 @@ This project is a web-based user interface for interacting with the Fal.ai Flux 
 - Text-to-Image generation
 - Image-to-Image modification
 - Support for multiple Flux models: Flux.1 [dev], Flux.1 [schnell], and Flux Pro
-- Adjustable parameters including image size, inference steps, guidance scale, and safety tolerance
+- Adjustable parameters including image size, inference steps, guidance scale, Seed, and safety tolerance
 - Image gallery to view and manage generated images
 - Ability to load settings from previously generated images
 
@@ -24,7 +24,7 @@ Before you begin, ensure you have met the following requirements:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/strykerx/falai-fluxui.git
+   git clone https://github.com/ArashDemehri/falai-fluxui-pluslora.git
    cd falai-fluxui
    ```
 
