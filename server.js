@@ -27,7 +27,7 @@ const upload = multer({ dest: 'uploads/' });
 
 app.post('/generate-image', async (req, res) => {
   try {
-    const { model, prompt, image_size, num_inference_steps, image_count } = req.body;
+    const { model, prompt, image_size, num_inference_steps, image_count, loras } = req.body;
 
     console.log('Request payload:', req.body);
 
@@ -35,7 +35,8 @@ app.post('/generate-image', async (req, res) => {
       prompt,
       image_size,
       num_inference_steps: parseInt(num_inference_steps),
-      num_images: parseInt(image_count) || 1
+      num_images: parseInt(image_count) || 1,
+      loras: loras || [] // Add support for LoRA
     };
 
     if (model === 'fal-ai/flux/dev') {
@@ -48,7 +49,10 @@ app.post('/generate-image', async (req, res) => {
       input.enable_safety_checker = false;
     }
 
-    const result = await fal.subscribe(model, {
+    // Use fal-ai/flux-general model when LoRA is provided
+    const modelToUse = loras && loras.length > 0 ? 'fal-ai/flux-general' : model;
+
+    const result = await fal.subscribe(modelToUse, {
       input,
       logs: true,
       onQueueUpdate: (update) => {
@@ -57,7 +61,6 @@ app.post('/generate-image', async (req, res) => {
         }
       },
     });
-
 
     const imageUrls = [];
 

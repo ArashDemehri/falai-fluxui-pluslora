@@ -18,6 +18,7 @@
             gap: 20px;
         }
         .input-section, .result-section, .gallery-section {
+            
             background-color: #2d2d2d;
             padding: 20px;
             border-radius: 5px;
@@ -232,6 +233,113 @@
         #safety-tolerance-container {
             display: none;
         }
+
+        .lora-input {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .lora-input input {
+            margin-right: 10px;
+        }
+
+        .remove-lora-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .remove-lora-btn:hover {
+            background-color: #ff3333;
+        }
+
+        .custom-size-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .custom-size-inputs input {
+            width: 80px;
+        }
+
+        #seed, #img2img-seed {
+            width: 150px;
+        }
+
+        .seed-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #random-seed-btn, #img2img-random-seed-btn {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .gallery-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-left: 10px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #7b2cbf;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
@@ -260,15 +368,22 @@
                     <textarea id="prompt" rows="4"></textarea>
                     
                     <label for="image-size">Image Size</label>
-                    <select id="image-size">
-                        <option value="landscape_4_3">Landscape 4:3</option>
+                    <select id="image-size" onchange="toggleCustomSize('image-size')">
                         <option value="square_hd">Square HD</option>
+                        <option value="square">Square</option>
                         <option value="portrait_4_3">Portrait 4:3</option>
+                        <option value="portrait_16_9">Portrait 16:9</option>
+                        <option value="landscape_4_3">Landscape 4:3</option>
                         <option value="landscape_16_9">Landscape 16:9</option>
+                        <option value="custom">Custom</option>
                     </select>
+                    <div id="custom-size-image-size" style="display: none;">
+                        <input type="number" id="custom-width-image-size" placeholder="Width" min="64" max="1024">
+                        <input type="number" id="custom-height-image-size" placeholder="Height" min="64" max="1024">
+                    </div>
                     
-                    <label for="num-inference-steps">Num Inference Steps</label>
-                    <input type="number" id="num-inference-steps" value="28">
+                    <label for="num-inference-steps">Number of Inference Steps</label>
+                    <input type="number" id="num-inference-steps" min="1" max="4" value="4">
                     
                     <div id="guidance-scale-container">
                         <label for="guidance-scale">Guidance Scale</label>
@@ -285,6 +400,20 @@
                         <label for="image-count">Number of Images:</label>
                         <input type="range" id="image-count" min="1" max="25" value="1">
                         <span id="image-count-display">1</span>
+                    </div>
+                    
+                    <div id="lora-container">
+                        <h3>LoRA Parameters</h3>
+                        <div id="lora-inputs">
+                            <!-- The initial LoRA input will be added dynamically -->
+                        </div>
+                        <button id="add-lora-btn">Add LoRA</button>
+                    </div>
+                    
+                    <div class="seed-container">
+                        <label for="seed">Seed</label>
+                        <input type="number" id="seed" value="-1" min="-1">
+                        <button id="random-seed-btn" onclick="setSeedToRandom('seed')">🎲</button>
                     </div>
                     
                     <button id="generate-btn">Generate Image</button>
@@ -308,18 +437,31 @@
                 <span id="strength-value">0.95</span>
                 
                 <label for="img2img-image-size">Image Size</label>
-                <select id="img2img-image-size">
-                    <option value="landscape_4_3">Landscape 4:3</option>
+                <select id="img2img-image-size" onchange="toggleCustomSize('img2img-image-size')">
                     <option value="square_hd">Square HD</option>
+                    <option value="square">Square</option>
                     <option value="portrait_4_3">Portrait 4:3</option>
+                    <option value="portrait_16_9">Portrait 16:9</option>
+                    <option value="landscape_4_3">Landscape 4:3</option>
                     <option value="landscape_16_9">Landscape 16:9</option>
+                    <option value="custom">Custom</option>
                 </select>
+                <div id="custom-size-img2img-image-size" style="display: none;">
+                    <input type="number" id="custom-width-img2img-image-size" placeholder="Width" min="64" max="1024">
+                    <input type="number" id="custom-height-img2img-image-size" placeholder="Height" min="64" max="1024">
+                </div>
                 
                 <label for="img2img-num-inference-steps">Num Inference Steps</label>
                 <input type="number" id="img2img-num-inference-steps" value="40" min="1" max="100">
                 
                 <label for="img2img-guidance-scale">Guidance Scale</label>
                 <input type="number" id="img2img-guidance-scale" value="3.5" step="0.1" min="1" max="20">
+                
+                <div class="seed-container">
+                    <label for="img2img-seed">Seed</label>
+                    <input type="number" id="img2img-seed" value="-1" min="-1">
+                    <button id="img2img-random-seed-btn" onclick="setSeedToRandom('img2img-seed')">🎲</button>
+                </div>
                 
                 <button id="img2img-generate-btn">Generate Image</button>
             </div>
@@ -335,7 +477,15 @@
         </div>
     </div>
 
-        <div class="gallery-section">
+        <div class="gallery-toggle">
+            <label for="gallery-toggle">Show Gallery</label>
+            <label class="switch">
+                <input type="checkbox" id="gallery-toggle" checked>
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <div id="gallery-section" class="gallery-section">
             <h2>Gallery</h2>
             <div id="gallery" class="gallery-grid"></div>
         </div>
@@ -354,23 +504,39 @@
         const galleryDiv = document.getElementById('gallery');
         const imageCountSlider = document.getElementById('image-count');
         const imageCountDisplay = document.getElementById('image-count-display');
-
+        
+        // This function updates the UI options based on the selected model
         function updateModelOptions() {
             const model = document.getElementById('model').value;
+            const numInferenceStepsInput = document.getElementById('num-inference-steps');
             const guidanceScaleContainer = document.getElementById('guidance-scale-container');
             const safetyToleranceContainer = document.getElementById('safety-tolerance-container');
 
             if (model === 'fal-ai/flux/schnell') {
+                numInferenceStepsInput.max = 4;
+                numInferenceStepsInput.value = 4; // Set to 4 for Schnell
                 guidanceScaleContainer.style.display = 'none';
                 safetyToleranceContainer.style.display = 'none';
-            } else if (model === 'fal-ai/flux-pro') {
-                guidanceScaleContainer.style.display = 'block';
-                safetyToleranceContainer.style.display = 'block';
-            } else {
+            } else if (model === 'fal-ai/flux/dev') {
+                numInferenceStepsInput.max = 50;
+                numInferenceStepsInput.value = 20; // Set to 20 for Dev
                 guidanceScaleContainer.style.display = 'block';
                 safetyToleranceContainer.style.display = 'none';
+            } else if (model === 'fal-ai/flux-pro') {
+                numInferenceStepsInput.max = 50;
+                numInferenceStepsInput.value = 20; // Set to 20 for Pro
+                guidanceScaleContainer.style.display = 'block';
+                safetyToleranceContainer.style.display = 'block';
             }
         }
+
+        // Call updateModelOptions when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            updateModelOptions();
+        });
+
+        // Add an event listener to the model select element
+        document.getElementById('model').addEventListener('change', updateModelOptions);
 
         const safetyToleranceSlider = document.getElementById('safety-tolerance');
         const safetyToleranceValue = document.getElementById('safety-tolerance-value');
@@ -378,24 +544,6 @@
         safetyToleranceSlider.addEventListener('input', function() {
             safetyToleranceValue.textContent = this.value;
         });
-
-
-
-    modelSelect.addEventListener('change', function() {
-        if (this.value === 'fal-ai/flux/schnell') {
-            numInferenceStepsInput.value = 4;
-            guidanceScaleContainer.style.display = 'none';
-            safetyToleranceContainer.style.display = 'none';
-        } else if (this.value === 'fal-ai/flux-pro') {
-            numInferenceStepsInput.value = 28;
-            guidanceScaleContainer.style.display = 'block';
-            safetyToleranceContainer.style.display = 'block';
-        } else {
-            numInferenceStepsInput.value = 28;
-            guidanceScaleContainer.style.display = 'block';
-            safetyToleranceContainer.style.display = 'none';
-        }
-    });
 
         generateBtn.addEventListener('click', generateImage);
 
@@ -411,9 +559,17 @@
             errorMessageElement.textContent = '';
             const model = document.getElementById('model').value;
             const prompt = document.getElementById('prompt').value;
-            const imageSize = document.getElementById('image-size').value;
+            const imageSizeSelect = document.getElementById('image-size');
+            let imageSize = imageSizeSelect.value;
+            if (imageSize === 'custom') {
+                const width = document.getElementById('custom-width-image-size').value;
+                const height = document.getElementById('custom-height-image-size').value;
+                imageSize = `${width}x${height}`;
+            }
             const numInferenceSteps = document.getElementById('num-inference-steps').value;
             const imageCount = parseInt(document.getElementById('image-count').value);
+            const seedInput = document.getElementById('seed');
+            const seed = parseInt(seedInput.value);
 
             const loadingDiv = document.getElementById('loading');
             const resultImagesDiv = document.getElementById('result-images');
@@ -427,7 +583,9 @@
                     prompt,
                     image_size: imageSize,
                     num_inference_steps: parseInt(numInferenceSteps),
-                    image_count: imageCount
+                    image_count: imageCount,
+                    loras: getLoras(),
+                    seed: seed === -1 ? Math.floor(Math.random() * 2147483647) : seed // Use random seed if -1, otherwise use the specified seed
                 };
 
                 if (model === 'fal-ai/flux/dev') {
@@ -449,7 +607,15 @@
                     resultImagesDiv.appendChild(img);
                 });
 
-                loadGallery();
+                // Only load gallery if it's toggled on
+                if (document.getElementById('gallery-toggle').checked) {
+                    loadGallery();
+                }
+
+                // Don't update the seed input if it was -1
+                if (seed !== -1) {
+                    seedInput.value = requestData.seed;
+                }
             } catch (error) {
                 console.error('Error generating image:', error);
                 alert('Error generating image. Please try again.');
@@ -459,31 +625,34 @@
         }
 
         async function loadGallery() {
-        try {
-            const response = await axios.get('/gallery');
-            const galleryElem = document.getElementById('gallery');
-            galleryElem.innerHTML = '';
-            response.data.forEach(image => {
-                const imgContainer = document.createElement('div');
-                imgContainer.className = 'gallery-item';
-                const img = document.createElement('img');
-                img.src = image.url;
-                img.alt = 'Gallery Image';
-                img.className = 'gallery-image';
-                img.onclick = () => openShadowbox(image.url);
-                imgContainer.appendChild(img);
-                
-                const loadSettingsBtn = document.createElement('button');
-                loadSettingsBtn.textContent = 'Load Settings';
-                loadSettingsBtn.onclick = () => loadImageSettings(image.filename);
-                imgContainer.appendChild(loadSettingsBtn);
-                
-                galleryElem.appendChild(imgContainer);
-            });
-        } catch (error) {
-            console.error('Error loading gallery:', error);
+            const galleryToggle = document.getElementById('gallery-toggle');
+            if (!galleryToggle.checked) return; // Don't load if gallery is toggled off
+
+            try {
+                const response = await axios.get('/gallery');
+                const galleryElem = document.getElementById('gallery');
+                galleryElem.innerHTML = '';
+                response.data.forEach(image => {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'gallery-item';
+                    const img = document.createElement('img');
+                    img.src = image.url;
+                    img.alt = 'Gallery Image';
+                    img.className = 'gallery-image';
+                    img.onclick = () => openShadowbox(image.url);
+                    imgContainer.appendChild(img);
+                    
+                    const loadSettingsBtn = document.createElement('button');
+                    loadSettingsBtn.textContent = 'Load Settings';
+                    loadSettingsBtn.onclick = () => loadImageSettings(image.filename);
+                    imgContainer.appendChild(loadSettingsBtn);
+                    
+                    galleryElem.appendChild(imgContainer);
+                });
+            } catch (error) {
+                console.error('Error loading gallery:', error);
+            }
         }
-    }
 
         const shadowbox = document.getElementById('shadowbox');
         const shadowboxImg = document.getElementById('shadowbox-image');
@@ -615,9 +784,17 @@
 
             const prompt = document.getElementById('img2img-prompt').value;
             const strength = strengthSlider.value;
-            const imageSize = document.getElementById('img2img-image-size').value;
+            const imageSizeSelect = document.getElementById('img2img-image-size');
+            let imageSize = imageSizeSelect.value;
+            if (imageSize === 'custom') {
+                const width = document.getElementById('custom-width-img2img-image-size').value;
+                const height = document.getElementById('custom-height-img2img-image-size').value;
+                imageSize = `${width}x${height}`;
+            }
             const numInferenceSteps = document.getElementById('img2img-num-inference-steps').value;
             const guidanceScale = document.getElementById('img2img-guidance-scale').value;
+            const seedInput = document.getElementById('img2img-seed');
+            const seed = parseInt(seedInput.value);
 
             const loadingDiv = document.getElementById('loading');
             const resultImagesDiv = document.getElementById('result-images');
@@ -633,6 +810,8 @@
                 formData.append('image_size', imageSize);
                 formData.append('num_inference_steps', numInferenceSteps);
                 formData.append('guidance_scale', guidanceScale);
+                const actualSeed = seed === -1 ? Math.floor(Math.random() * 2147483647) : seed;
+                formData.append('seed', actualSeed);
 
                 const response = await axios.post('/generate-img2img', formData, {
                     headers: {
@@ -649,7 +828,15 @@
                     resultImagesDiv.appendChild(img);
                 });
 
-                loadGallery();
+                // Only load gallery if it's toggled on
+                if (document.getElementById('gallery-toggle').checked) {
+                    loadGallery();
+                }
+
+                // Don't update the seed input if it was -1
+                if (seed !== -1) {
+                    seedInput.value = actualSeed;
+                }
             } catch (error) {
                 console.error('Error generating image:', error);
                 alert('Error generating image. Please try again.');
@@ -658,9 +845,110 @@
             }
         }
 
+        // Add LoRA input dynamically
+        document.getElementById('add-lora-btn').addEventListener('click', addLoraInput);
+
+        function addLoraInput() {
+            const loraInputs = document.getElementById('lora-inputs');
+            const newIndex = loraInputs.children.length;
+            const newLoraInput = document.createElement('div');
+            newLoraInput.className = 'lora-input';
+            newLoraInput.innerHTML = `
+                <label for="lora-path-${newIndex}">LoRA Path:</label>
+                <input type="text" id="lora-path-${newIndex}" placeholder="Enter LoRA path">
+                <label for="lora-scale-${newIndex}">LoRA Scale:</label>
+                <input type="number" id="lora-scale-${newIndex}" value="1.0" step="0.1" min="0" max="2">
+                <button class="remove-lora-btn">Remove</button>
+            `;
+            loraInputs.appendChild(newLoraInput);
+
+            // Add event listener for the remove button
+            newLoraInput.querySelector('.remove-lora-btn').addEventListener('click', function() {
+                loraInputs.removeChild(newLoraInput);
+            });
+        }
+
+        // Add the first LoRA input when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            addLoraInput();
+        });
+
+        function getLoras() {
+            const loraInputs = document.querySelectorAll('.lora-input');
+            return Array.from(loraInputs).map((input, index) => {
+                const path = input.querySelector(`input[id^="lora-path-"]`).value;
+                const scale = parseFloat(input.querySelector(`input[id^="lora-scale-"]`).value);
+                return path ? { path, scale } : null;
+            }).filter(lora => lora !== null);
+        }
+
+        function toggleCustomSize(selectId) {
+            const select = document.getElementById(selectId);
+            const customSizeDiv = document.getElementById(`custom-size-${selectId}`);
+            if (select.value === 'custom') {
+                customSizeDiv.style.display = 'block';
+            } else {
+                customSizeDiv.style.display = 'none';
+            }
+        }
+
+        function setSeedToRandom(inputId) {
+            document.getElementById(inputId).value = -1;
+        }
+
         // Load gallery on page load
         loadGallery();
         updateModelOptions();
+
+        // Add event listener for the gallery toggle
+        document.getElementById('gallery-toggle').addEventListener('change', toggleGallery);
+
+        // Call toggleGallery when the page loads to set initial state
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleGallery();
+        });
+
+        function toggleGallery() {
+            const gallerySection = document.getElementById('gallery-section');
+            const galleryToggle = document.getElementById('gallery-toggle');
+            
+            if (galleryToggle.checked) {
+                gallerySection.style.display = 'block';
+                loadGallery(); // Reload the gallery when it's turned on
+            } else {
+                gallerySection.style.display = 'none';
+            }
+        }
+
+        async function loadGallery() {
+            const galleryToggle = document.getElementById('gallery-toggle');
+            if (!galleryToggle.checked) return; // Don't load if gallery is toggled off
+
+            try {
+                const response = await axios.get('/gallery');
+                const galleryElem = document.getElementById('gallery');
+                galleryElem.innerHTML = '';
+                response.data.forEach(image => {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'gallery-item';
+                    const img = document.createElement('img');
+                    img.src = image.url;
+                    img.alt = 'Gallery Image';
+                    img.className = 'gallery-image';
+                    img.onclick = () => openShadowbox(image.url);
+                    imgContainer.appendChild(img);
+                    
+                    const loadSettingsBtn = document.createElement('button');
+                    loadSettingsBtn.textContent = 'Load Settings';
+                    loadSettingsBtn.onclick = () => loadImageSettings(image.filename);
+                    imgContainer.appendChild(loadSettingsBtn);
+                    
+                    galleryElem.appendChild(imgContainer);
+                });
+            } catch (error) {
+                console.error('Error loading gallery:', error);
+            }
+        }
     </script>
 </body>
 </html>
